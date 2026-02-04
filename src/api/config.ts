@@ -3,7 +3,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     // Auth
     GOOGLE_LOGIN: '/auth/google',
-    GET_ME: '/auth/me',
+    GET_PROFILE: '/auth/profile', // ⭐ ใช้ /auth/profile แทน /auth/me
     
     // Game
     PLANT_TREE: '/game/plant',
@@ -23,6 +23,7 @@ export const API_CONFIG = {
     // Users
     GET_USER: '/users/me',
     UPDATE_USER: '/users/me',
+    GET_USER_STATE: '/users/:userId/state',
   },
 };
 

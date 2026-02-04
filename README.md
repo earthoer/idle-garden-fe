@@ -17,21 +17,8 @@ npm start
 ```
 
 ### 3. Run on Device
-
-**iOS:**
-```bash
-npm run ios
-```
-
-**Android:**
-```bash
-npm run android
-```
-
-**Web:**
-```bash
-npm run web
-```
+- Scan QR code with Expo Go app
+- Or press `a` for Android, `i` for iOS
 
 ---
 
@@ -39,12 +26,10 @@ npm run web
 
 - ✅ Google OAuth Login
 - ✅ Plant & Grow Trees
-- ✅ Water (Click) System with Combo
+- ✅ Water (Click) System
 - ✅ Sell Trees for Gold
 - ✅ 5 Seeds (Bean Sprout → Carrot)
-- ✅ 4 Locations (Waste Land → Garden)
-- ✅ Real-time Progress Updates
-- ✅ Offline Support (AsyncStorage)
+- ✅ Real-time Updates
 
 ---
 
@@ -58,79 +43,62 @@ src/
 │   ├── auth.ts         # Auth API
 │   └── game.ts         # Game API
 ├── screens/
-│   ├── LoginScreen.tsx
-│   └── GameScreen.tsx
+│   ├── LoginScreen.tsx # Login with Google
+│   └── GameScreen.tsx  # Main game
 ├── types/
 │   └── index.ts        # TypeScript types
 └── utils/
     ├── storage.ts      # AsyncStorage
-    └── game.ts         # Game utilities
+    └── game.ts         # Game helpers
 ```
 
 ---
 
-## 🔧 Configuration
+## 🔧 Key Features
 
-**API URL:**  
-Edit `src/api/config.ts`:
-```typescript
-export const API_CONFIG = {
-  BASE_URL: 'https://idle-garden-be-production.up.railway.app/api',
-  // ...
-};
+### OAuth Deep Link
+- Scheme: `idlegarden://`
+- Callback: `idlegarden://auth?token=xxx`
+
+### API Integration
+- Base URL: `https://idle-garden-be-production.up.railway.app/api`
+- JWT Authentication
+- Auto token injection
+
+### Dependencies (Minimal)
+```json
+{
+  "@react-native-async-storage/async-storage": "^2.2.0",
+  "axios": "^1.7.7",
+  "expo": "~54.0.33",
+  "react-native-safe-area-context": "^5.6.2"
+}
 ```
 
 ---
 
-## 🎮 How to Play
+## 🧪 Testing
 
-1. **Login** with Google
-2. **Tap empty slot** to plant seed
-3. **Tap Water** to reduce grow time
-4. **Build combos** for faster progress
-5. **Sell trees** when ready
-6. **Upgrade** seeds & locations
+1. Open Expo Go app
+2. Scan QR code
+3. Tap "Sign in with Google"
+4. Approve on browser
+5. Auto redirect to app
+6. ✅ Login success!
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Can't login?
-```
-- Check API_URL in src/api/config.ts
-- Check Google OAuth setup
-- Clear app data & restart
-```
+### Login stuck?
+- Check console logs
+- Verify deep link: `idlegarden://auth?token=xxx`
+- Check token saved in AsyncStorage
 
 ### No data showing?
-```
-- Check backend is running
-- Verify seeds are seeded
+- Verify backend is running
+- Check API URL in `src/api/config.ts`
 - Check network connection
-```
-
----
-
-## 📦 Build for Production
-
-**Android:**
-```bash
-eas build --platform android
-```
-
-**iOS:**
-```bash
-eas build --platform ios
-```
-
----
-
-## 🎨 Design
-
-- Dark theme
-- Minimal UI
-- Touch-friendly buttons
-- Real-time updates
 
 ---
 

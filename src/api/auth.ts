@@ -1,24 +1,37 @@
-import { apiClient } from "./client";
-import { API_CONFIG, getFullUrl } from "./config";
-import { User, ApiResponse } from "../types";
-import { storage } from "../utils/storage";
-import { Linking } from "react-native";
+import { apiClient } from './client';
+import { API_CONFIG, getFullUrl } from './config';
+import { User, ApiResponse } from '../types';
+import { storage } from '../utils/storage';
+import { Linking } from 'react-native';
 
 export const authApi = {
-  // Google OAuth Login
   async loginWithGoogle(): Promise<void> {
     const url = getFullUrl(API_CONFIG.ENDPOINTS.GOOGLE_LOGIN);
     await Linking.openURL(url);
   },
 
-  // ⭐ เปลี่ยน endpoint
   async getMe(): Promise<User> {
-    const response = await apiClient.get<ApiResponse<User>>("/auth/profile");
+    const response = await apiClient.get<ApiResponse<User>>(
+      API_CONFIG.ENDPOINTS.GET_PROFILE
+    );
     if (response.data) {
       await storage.saveUser(response.data);
       return response.data;
     }
-    throw new Error("Failed to get user data");
+    throw new Error('Failed to get user data');
+  },
+
+  async getGameState(): Promise<any> {
+    // Get userId from profile first
+    const profile = await this.getMe();
+    const userId = (profile as any).userId || profile._id; // ← ใช้ userId ถูกต้อง
+    
+    // Get complete game state
+    const response = await apiClient.get(
+      API_CONFIG.ENDPOINTS.GET_USER_STATE.replace(':userId', userId)
+    );
+    
+    return response.data?.data || response.data;
   },
 
   async saveAuthToken(token: string): Promise<void> {

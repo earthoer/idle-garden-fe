@@ -13,19 +13,6 @@ export interface User {
   unlockedSeeds: string[];
   unlockedLocations: string[];
   currentLocation: string;
-  premiumFeatures: {
-    autoWater: boolean;
-    offlineProgress: boolean;
-    extraSlots: number;
-    adFree: boolean;
-  };
-  adBoosts: {
-    timeReductionAvailable: number;
-    sellMultiplier: number;
-    lastAdWatchedAt: Date;
-    dailyAdsWatched: number;
-    totalAdWatchCount: number;
-  };
   createdAt: Date;
   lastLogin: Date;
 }
@@ -36,7 +23,7 @@ export interface Seed {
   name: string;
   basePrice: number;
   baseSellPrice: number;
-  baseGrowTime: number; // seconds
+  baseGrowTime: number;
   icon: string;
   description: string;
   unlockRequirement: {
@@ -68,18 +55,14 @@ export interface PlantedTree {
   slotIndex: number;
   plantedAt: Date;
   harvestableAt: Date;
+  startTime?: Date;  // ⭐ เพิ่มสำหรับ backend response
+  endTime?: Date;    // ⭐ เพิ่มสำหรับ backend response
   currentGrowTime: number;
   totalGrowTime: number;
   quality: 'normal' | 'golden' | 'rainbow';
   isReady: boolean;
   locationBonus: number;
-}
-
-export interface GameState {
-  user: User;
-  plantedTrees: PlantedTree[];
-  seeds: Seed[];
-  locations: Location[];
+  timeReduced?: number; // ⭐ จำนวนวินาทีที่ลดไปแล้ว
 }
 
 export interface ApiResponse<T> {

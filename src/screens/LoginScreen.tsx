@@ -7,6 +7,8 @@ import {
   Image,
   ActivityIndicator,
   Linking,
+  Alert,
+  Platform,
 } from 'react-native';
 import { authApi } from '../api/auth';
 import { storage } from '../utils/storage';
@@ -16,47 +18,78 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for deep link (OAuth callback)
+    // ⭐ Handle deep link (Mobile)
     const handleDeepLink = async (event: { url: string }) => {
-      const url = event.url;
-      
-      // Parse token from URL
-      // Expected: exp://localhost:19000/--/?token=xxx
-      const tokenMatch = url.match(/[?&]token=([^&]+)/);
-      
-      if (tokenMatch) {
-        const token = tokenMatch[1];
-        await storage.saveToken(token);
-        
-        // Get user data
-        try {
-          await authApi.getMe();
-          onLoginSuccess();
-        } catch (error) {
-          console.error('Failed to get user:', error);
-          setLoading(false);
-        }
-      }
+      console.log('Deep link received:', event.url);
+      await processToken(event.url);
     };
 
     const subscription = Linking.addEventListener('url', handleDeepLink);
-
-    // Check if already logged in
+    
+    // ⭐ Handle query parameter (Web)
+    const checkWebToken = async () => {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        
+        if (token) {
+          console.log('Token from web query:', token.substring(0, 20) + '...');
+          
+          try {
+            await storage.saveToken(token);
+            await authApi.getMe();
+            
+            // Clean URL
+            window.history.replaceState({}, '', '/');
+            
+            onLoginSuccess();
+          } catch (error) {
+            console.error('Web token processing error:', error);
+            Alert.alert('Error', 'Failed to process login');
+            setLoading(false);
+          }
+        }
+      }
+    };
+    
+    checkWebToken();
     checkAuth();
 
     return () => subscription.remove();
   }, []);
 
-  const checkAuth = async () => {
-    setLoading(true);
-    const isAuth = await authApi.isAuthenticated();
-    if (isAuth) {
-      onLoginSuccess();
+  const processToken = async (url: string) => {
+    try {
+      const urlObj = new URL(url);
+      const token = urlObj.searchParams.get('token');
+      
+      if (token) {
+        console.log('Token received:', token.substring(0, 20) + '...');
+        await storage.saveToken(token);
+        await authApi.getMe();
+        onLoginSuccess();
+      }
+    } catch (error) {
+      console.error('Token processing error:', error);
+      Alert.alert('Error', 'Failed to process login');
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const checkAuth = async () => {
+    try {
+      const isAuth = await authApi.isAuthenticated();
+      if (isAuth) {
+        onLoginSuccess();
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogin = async () => {
@@ -65,6 +98,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       await authApi.loginWithGoogle();
     } catch (error) {
       console.error('Login failed:', error);
+      Alert.alert('Error', 'Failed to open login page');
       setLoading(false);
     }
   };
@@ -80,14 +114,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
   return (
     <View style={styles.container}>
-      {/* Logo/Title */}
       <View style={styles.header}>
         <Text style={styles.logo}>🌱</Text>
         <Text style={styles.title}>Idle Garden</Text>
         <Text style={styles.subtitle}>Grow your garden empire!</Text>
       </View>
 
-      {/* Login Button */}
       <TouchableOpacity
         style={styles.loginButton}
         onPress={handleLogin}
@@ -100,7 +132,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         <Text style={styles.loginButtonText}>Sign in with Google</Text>
       </TouchableOpacity>
 
-      {/* Footer */}
       <Text style={styles.footer}>
         By signing in, you agree to our{'\n'}Terms of Service & Privacy Policy
       </Text>

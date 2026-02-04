@@ -14,7 +14,6 @@ class ApiClient {
       },
     });
 
-    // Request interceptor - add token
     this.client.interceptors.request.use(
       async (config) => {
         const token = await storage.getToken();
@@ -23,26 +22,20 @@ class ApiClient {
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
-    // Response interceptor - handle errors
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
         if (error.response?.status === 401) {
-          // Token expired - logout
           await storage.clearAll();
-          // Navigate to login (will be handled by app)
         }
         return Promise.reject(error);
       }
     );
   }
 
-  // Generic methods
   async get<T>(url: string, params?: any): Promise<T> {
     const response = await this.client.get(url, { params });
     return response.data;
